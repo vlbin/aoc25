@@ -5,19 +5,47 @@ let read_lines file =
 let input = read_lines "inputs/day01"
 
 let get_amount input = int_of_string (String.sub input 1 (String.length input - 1))
-let get_dir input = String.get input 0
 
-let turn dir amount start = 
-  match dir with
-  | 'L' -> (start + 100 - amount) mod 100
-  | _ -> (start + amount) mod 100
+let get_amount_dir input = 
+  match String.get input 0 with
+  | 'L' -> -1 * (get_amount input)
+  | _ -> get_amount input
 
-let rec make_turns instrs position acc =
+let turn amount start = (start + amount)
+
+let bounded amount = ((amount mod 100) + 100) mod 100
+
+let rec make_turns instrs pos zeros =
   match instrs with 
-  | [] -> acc
-  | (instr :: rest) -> make_turns rest (turn (get_dir instr) (get_amount instr) position) (position :: acc)
+  | [] -> zeros
+  | (instr :: rest) -> 
+    let amount = get_amount_dir instr in
+    let new_pos = bounded (turn amount pos) in
+    make_turns rest new_pos (if new_pos = 0 then zeros + 1 else zeros)
+
+let passed_times pos amount new_pos =
+  let laps = (abs amount) / 100 in
+  let did_pass = pos != 0 && new_pos != 0 && ((pos > new_pos && amount >= 0) || (pos < new_pos && amount <= 0)) in
+  laps + (if did_pass then 1 else 0)
+
+let rec make_turns_new instrs pos zeros =
+  match instrs with 
+  | [] -> zeros
+  | (instr :: rest) -> 
+    let amount = get_amount_dir instr in
+    let new_pos = bounded (turn amount pos) in
+    let passed = passed_times pos amount new_pos in
+    let end_zero = if new_pos = 0 then 1 else 0 in
+    make_turns_new rest new_pos (zeros + passed + end_zero)
+
+let part1 =
+ make_turns input 50 0
+
+let part2 =
+  (* passed_times 0 (-105) 95 *)
+ make_turns_new input 50 0
+  
 
 let () = 
-  let turns = make_turns input 50 [] in
-  let zeros = List.length (List.filter (fun x -> x == 0) turns) in
-  Printf.printf "%d " zeros
+  Printf.printf "%d \n" part1;
+  Printf.printf "%d \n" part2;
