@@ -7,9 +7,6 @@ let split_and_parse str =
   | [min; max] -> (min, max)
   | _ -> failwith "Invalid range"
 
-let parsed_ranges ranges = 
-  List.map split_and_parse ranges
-
 let input = ranges "inputs/day02"
 
 let chunk_invalid chunks = 
@@ -23,38 +20,6 @@ let chunk string size =
     | "" -> acc
     | str -> chunk_next (String.sub str size ((String.length str) - size)) ((String.sub str 0 size) :: acc) in
   chunk_next string []
-
-let all_chunks id = 
-  let id_str = Int.to_string id in
-  let len = String.length id_str in
-  let max = len / 2 in
-  let rec chunk_loop chunks size =
-    if size > max then chunks
-    else if size mod len = 0 then chunk_loop (chunk id_str size :: chunks) (size + 1)
-    else chunk_loop chunks (size + 1) in
-  chunk_loop [] 1
-
-let is_valid id =
-  let id_str = Int.to_string(id) in
-  let len = String.length id_str in
-  match (len mod 2) with
-  | 0 -> int_of_string (String.sub id_str 0 (len / 2)) != int_of_string (String.sub id_str (len / 2) (len / 2))
-  | _ -> true
-
-let invalid_in_range min max = 
-  let rec loop curr acc =
-    match curr with
-    | n when n > max -> acc
-    | _ -> loop (curr + 1) (if is_valid curr then acc else (curr :: acc)) in
-  let invalid_nums = loop min [] in
-  List.fold_left ( + ) 0 invalid_nums
-
-let print_tuple (a,b) =
-  Printf.printf "%s,%s" a b
-
-let chunks_to_string =
-  String.concat ", "
-
 
 let is_invalid id =
   let rec is_invalid_loop chunk_size =
